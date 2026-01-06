@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/OderoCeasar/localshare/internal/config"
+	"github.com/OderoCeasar/localshare/pkg/fileutil"
 	"github.com/gin-gonic/gin"
-	"github.com/yourusername/LocalShare/internal/config"
-	"github.com/yourusername/LocalShare/pkg/fileutil"
 )
 
 // Server represents the HTTP server
@@ -105,4 +105,25 @@ func truncateString(s string, maxLen int) string {
 		return s
 	}
 	return s[:maxLen-3] + "..."
+}
+
+func getIndexHTML() string {
+	return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>LocalShare</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; }
+    .container { max-width: 900px; margin: 0 auto; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>LocalShare</h1>
+    <p>Welcome to LocalShare. Use the API endpoints to upload and list files.</p>
+  </div>
+</body>
+</html>`
 }

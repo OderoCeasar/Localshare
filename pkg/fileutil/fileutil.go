@@ -49,7 +49,7 @@ func ListFiles(dirPath string) ([]models.FileInfo, error) {
 		files = append(files, models.FileInfo{
 			Name:         entry.Name(),
 			Size:         info.Size(),
-			ModifiedTime: info.ModTime(),
+			Modified:     info.ModTime(),
 			IsDir:        entry.IsDir(),
 		})
 	}
