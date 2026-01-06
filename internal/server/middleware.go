@@ -4,18 +4,18 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/OderoCeasar/localshare/internal/models"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
-	"github.com/OderoCeasar/localshare/internal/models"
 )
 
 const (
-	sessionName         = "localshare_session"
-	sessionKeyPIN       = "pin_verified"
-	sessionKeyAdmin     = "admin_authenticated"
-	sessionSecret       = "secret_key"
+	sessionName     = "localshare_session"
+	sessionKeyPIN   = "pin_verified"
+	sessionKeyAdmin = "admin_authenticated"
+	sessionSecret   = "secret_key"
 )
 
 // setupMiddleware configures all middleware for the router
@@ -36,7 +36,7 @@ func (s *Server) setupMiddleware() {
 		Path:     "/",
 		MaxAge:   86400 * 7, // 7 days
 		HttpOnly: true,
-		Secure:   false, 
+		Secure:   false,
 	})
 	s.router.Use(sessions.Sessions(sessionName, store))
 
@@ -134,7 +134,7 @@ func (s *Server) loggerMiddleware() gin.HandlerFunc {
 			resetColor := "\033[0m"
 
 			gin.DefaultWriter.Write([]byte(
-				statusColor + "[LocalDrop] " + resetColor +
+				statusColor + "[LocalShare] " + resetColor +
 					method + " " + path +
 					" | " + statusColor + string(rune(statusCode)) + resetColor +
 					" | " + latency.String() +

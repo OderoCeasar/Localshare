@@ -3,11 +3,10 @@ package server
 import (
 	"fmt"
 	"net"
-	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/yourusername/localdrop/internal/config"
-	"github.com/yourusername/localdrop/pkg/fileutil"
+	"github.com/yourusername/LocalShare/internal/config"
+	"github.com/yourusername/LocalShare/pkg/fileutil"
 )
 
 // Server represents the HTTP server
@@ -28,7 +27,7 @@ func New(cfg *config.Config) (*Server, error) {
 
 	// Create router
 	router := gin.New()
-	
+
 	// Add recovery middleware
 	router.Use(gin.Recovery())
 
@@ -68,15 +67,15 @@ func (s *Server) printStartupBanner() {
 	}
 	fmt.Println("╠════════════════════════════════════════════════════════════╣")
 	fmt.Printf("║  Upload Directory: %-39s ║\n", truncateString(s.config.UploadDir, 39))
-	
+
 	if s.config.IsPINProtected() {
 		fmt.Println("║  PIN Protection: ENABLED                                ║")
 	}
-	
+
 	if s.config.IsAdminAuthEnabled() {
 		fmt.Println("║  Admin Auth: ENABLED                                    ║")
 	}
-	
+
 	fmt.Printf("║  Max File Size: %d MB                                  ║\n", s.config.MaxFileSizeMB)
 	fmt.Println("╚════════════════════════════════════════════════════════════╝")
 	fmt.Println("\n Scan this QR code on your phone (or type the Network URL)")
