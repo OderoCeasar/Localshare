@@ -79,7 +79,7 @@ func (s *Server) printStartupBanner() {
 	
 	fmt.Printf("║  Max File Size: %d MB                                  ║\n", s.config.MaxFileSizeMB)
 	fmt.Println("╚════════════════════════════════════════════════════════════╝")
-	fmt.Println("\n📱 Scan this QR code on your phone (or type the Network URL)")
+	fmt.Println("\n Scan this QR code on your phone (or type the Network URL)")
 	fmt.Println("Press Ctrl+C to stop the server\n")
 }
 
