@@ -13,21 +13,21 @@ import (
 // ErrInvalidPath is returned when a path contains invalid characters
 var ErrInvalidPath = errors.New("invalid file path")
 
-// SanitizeFilename removes 
+// SanitizeFilename removes
 func SanitizeFilename(filename string) (string, error) {
 
 	base := filepath.Base(filename)
-	
+
 	// Check for path traversal attempts
 	if strings.Contains(base, "..") || strings.Contains(base, "/") || strings.Contains(base, "\\") {
 		return "", ErrInvalidPath
 	}
-	
+
 	// Check for empty filename
 	if base == "" || base == "." {
 		return "", ErrInvalidPath
 	}
-	
+
 	return base, nil
 }
 
@@ -49,7 +49,7 @@ func ListFiles(dirPath string) ([]models.FileInfo, error) {
 		files = append(files, models.FileInfo{
 			Name:         entry.Name(),
 			Size:         info.Size(),
-			Modified:     info.ModTime(),
+			ModifiedTime: info.ModTime(),
 			IsDir:        entry.IsDir(),
 		})
 	}
