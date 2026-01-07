@@ -1,5 +1,5 @@
 # Binaries
-localshare
+localdrop
 *.exe
 *.exe~
 *.dll
@@ -39,7 +39,9 @@ Thumbs.db
 # Log files
 *.log
 
-# Frontend build
-frontend/dist/
-frontend/build/
-frontend/node_modules/
+# Frontend
+web/node_modules/
+web/dist/
+
+# Production build
+dist/

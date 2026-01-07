@@ -2,6 +2,7 @@ package server
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/OderoCeasar/localshare/internal/server/handlers"
@@ -17,9 +18,16 @@ func (s *Server) setupRoutes() {
 	fileHandler := handlers.NewFileHandler(s.config)
 	configHandler := handlers.NewConfigHandler(s.config)
 
-	// Serve static frontend
-	s.router.GET("/", func(c *gin.Context) {
-		c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(getIndexHTML()))
+	// Serve static frontend (from dist directory in production)
+	// In development, Vite dev server runs separately on port 3000
+	s.router.Static("/assets", "./dist/assets")
+	s.router.NoRoute(func(c *gin.Context) {
+		// Serve index.html for all non-API routes (SPA support)
+		if !strings.HasPrefix(c.Request.URL.Path, "/api") {
+			c.File("./dist/index.html")
+		} else {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
+		}
 	})
 
 	// API routes
@@ -47,9 +55,8 @@ func (s *Server) setupRoutes() {
 	// Health check endpoint
 	s.router.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
-			"status": "ok",
-			"service": "localshare",
+			"status": "healthy",
+			"service": "localdrop",
 		})
 	})
 }
-
