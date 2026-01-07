@@ -3,10 +3,11 @@ package server
 import (
 	"fmt"
 	"net"
+	"os"
 
+	"github.com/gin-gonic/gin"
 	"github.com/OderoCeasar/localshare/internal/config"
 	"github.com/OderoCeasar/localshare/pkg/fileutil"
-	"github.com/gin-gonic/gin"
 )
 
 // Server represents the HTTP server
@@ -27,7 +28,7 @@ func New(cfg *config.Config) (*Server, error) {
 
 	// Create router
 	router := gin.New()
-
+	
 	// Add recovery middleware
 	router.Use(gin.Recovery())
 
@@ -67,15 +68,15 @@ func (s *Server) printStartupBanner() {
 	}
 	fmt.Println("╠════════════════════════════════════════════════════════════╣")
 	fmt.Printf("║  Upload Directory: %-39s ║\n", truncateString(s.config.UploadDir, 39))
-
+	
 	if s.config.IsPINProtected() {
 		fmt.Println("║  PIN Protection: ENABLED                                ║")
 	}
-
+	
 	if s.config.IsAdminAuthEnabled() {
 		fmt.Println("║  Admin Auth: ENABLED                                    ║")
 	}
-
+	
 	fmt.Printf("║  Max File Size: %d MB                                  ║\n", s.config.MaxFileSizeMB)
 	fmt.Println("╚════════════════════════════════════════════════════════════╝")
 	fmt.Println("\n Scan this QR code on your phone (or type the Network URL)")
@@ -105,25 +106,4 @@ func truncateString(s string, maxLen int) string {
 		return s
 	}
 	return s[:maxLen-3] + "..."
-}
-
-func getIndexHTML() string {
-	return `<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>LocalShare</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 2rem; }
-    .container { max-width: 900px; margin: 0 auto; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>LocalShare</h1>
-    <p>Welcome to LocalShare. Use the API endpoints to upload and list files.</p>
-  </div>
-</body>
-</html>`
 }
