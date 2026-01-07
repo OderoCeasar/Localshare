@@ -144,25 +144,89 @@ The CLI is built with Cobra, providing:
 
 ### Running in Development
 
-1. **Start the Go server**:
+1. **Start the Go server** (Terminal 1):
 ```bash
-go run .
+cd /home/ceasar/cza/Projects/localshare
+go run ./cmd/localshare
 ```
 
-2. **Build the React frontend** (separate terminal):
-```bash
-cd frontend
-npm install
-npm run dev
+You'll see output like:
+```
+╔════════════════════════════════════════════════════════════╗
+║              LocalShare Server Started                      ║
+╠════════════════════════════════════════════════════════════╣
+║  Local:    http://localhost:8080                          ║
+║  Network:  http://192.168.100.13:8080                      ║
+╚════════════════════════════════════════════════════════════╝
 ```
 
-3. Access at `http://localhost:8080`
+2. **Start the Vite frontend dev server** (Terminal 2):
+```bash
+cd /home/ceasar/cza/Projects/localshare/web
+pnpm run dev
+```
+
+Vite will start on `http://localhost:5173` and proxy all `/api` requests to the Go backend.
+
+### Testing Locally
+
+#### Test on Your Laptop Browser
+
+1. Open `http://localhost:5173` or `http://192.168.100.13:5173` in your browser
+2. You should see the LocalShare interface
+3. Try uploading a file, downloading it, and deleting it
+
+#### Test on Your Phone (Same Network)
+
+1. Make sure your phone is on the same Wi-Fi network as your laptop
+2. Get your laptop's IP address from the Go server startup banner (e.g., `192.168.100.13`)
+3. On your phone browser, go to: `http://192.168.100.13:5173`
+4. Test the same features:
+   - **Upload a file** from your phone
+   - **Check the laptop** to see if the file appears
+   - **Download** the file on your phone
+   - **Delete** files
+
+#### Feature Testing Checklist
+
+- [ ] **Upload** - Upload files from both laptop and phone
+- [ ] **Download** - Download files from both devices
+- [ ] **Delete** - Delete files and verify they disappear
+- [ ] **File List** - Refresh and verify files appear correctly
+- [ ] **File Size Display** - Check files show correct sizes (B, KB, MB, GB)
+- [ ] **Modification Time** - Verify timestamps are accurate
+
+#### Testing with Security Features
+
+**Test with PIN Protection:**
+```bash
+go run ./cmd/localshare --pin 1234
+```
+Then try accessing the app - you should see a PIN entry screen before accessing files.
+
+**Test with Admin Authentication:**
+```bash
+go run ./cmd/localshare --admin --admin-pass secret123
+```
+Then try uploading a file - you should be prompted to login with admin credentials.
+
+**Test Both PIN and Admin:**
+```bash
+go run ./cmd/localshare --pin 1234 --admin --admin-pass secret123
+```
+
+#### Cross-Device Sync Test
+
+1. Upload a file from your **phone** 
+2. Check your **laptop** - it should appear immediately
+3. Download/delete the file from your **laptop**
+4. Refresh on your **phone** - changes should be reflected
 
 ### Building for Production
 
 1. **Build the frontend**:
 ```bash
-cd frontend
+cd /home/ceasar/cza/Projects/localshare/web
 npm run build
 ```
 
