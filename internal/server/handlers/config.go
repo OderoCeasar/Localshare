@@ -3,32 +3,28 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/OderoCeasar/localshare/internal/models"
 	"github.com/gin-gonic/gin"
 	"github.com/OderoCeasar/localshare/internal/config"
-	
+	"github.com/OderoCeasar/localshare/internal/models"
 )
 
-
-// handles configuration requests
+// ConfigHandler handles configuration-related requests
 type ConfigHandler struct {
 	config *config.Config
 }
 
-
-// NewConfigHandler
+// NewConfigHandler creates a new config handler
 func NewConfigHandler(cfg *config.Config) *ConfigHandler {
 	return &ConfigHandler{
 		config: cfg,
 	}
 }
 
-
-// returns the server configuration
+// GetConfig returns the server configuration
 func (h *ConfigHandler) GetConfig(c *gin.Context) {
 	c.JSON(http.StatusOK, models.ConfigResponse{
-		PINProtected: h.config.IsPINProtected(),
+		PINProtected:  h.config.IsPINProtected(),
 		AdminRequired: h.config.IsAdminAuthEnabled(),
-		MaxFileSize: h.config.MaxFileSize(),
+		MaxFileSize:   h.config.MaxFileSize(),
 	})
 }
