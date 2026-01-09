@@ -2,13 +2,15 @@ package handlers
 
 import (
 	"fmt"
+	"io"
 	"net/http"
+	"os"
 	"path/filepath"
 
-	"github.com/gin-gonic/gin"
 	"github.com/OderoCeasar/localshare/internal/config"
 	"github.com/OderoCeasar/localshare/internal/models"
 	"github.com/OderoCeasar/localshare/pkg/fileutil"
+	"github.com/gin-gonic/gin"
 )
 
 // FileHandler handles file-related requests
@@ -65,49 +67,77 @@ func (h *FileHandler) DownloadFile(c *gin.Context) {
 
 // UploadFile handles file upload requests
 func (h *FileHandler) UploadFile(c *gin.Context) {
-	// Get uploaded file
-	file, err := c.FormFile("file")
+	// Stream the uploaded file to disk to support large uploads without high memory usage
+	mr, err := c.Request.MultipartReader()
 	if err != nil {
-		c.JSON(http.StatusBadRequest, models.ErrorResponse{
-			Error: "No file provided",
-		})
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid multipart form"})
 		return
 	}
 
-	// Check file size
-	if file.Size > h.config.MaxFileSize() {
-		c.JSON(http.StatusBadRequest, models.ErrorResponse{
-			Error: fmt.Sprintf(
-				"File size exceeds maximum of %d MB",
-				h.config.MaxFileSizeMB,
-			),
-		})
-		return
+	var savedName string
+	maxSize := h.config.MaxFileSize()
+
+	for {
+		part, err := mr.NextPart()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Failed to read multipart data"})
+			return
+		}
+
+		if part.FormName() != "file" {
+			continue
+		}
+
+		if part.FileName() == "" {
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "No file provided"})
+			return
+		}
+
+		// Sanitize filename
+		safeFilename, err := fileutil.SanitizeFilename(part.FileName())
+		if err != nil {
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid filename"})
+			return
+		}
+
+		// Build destination path
+		dst := filepath.Join(h.config.UploadDir, safeFilename)
+		out, err := os.Create(dst)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Failed to create file"})
+			return
+		}
+
+		// Copy with limit (maxSize + 1 to detect overflow)
+		written, err := io.Copy(out, io.LimitReader(part, maxSize+1))
+		out.Close()
+		if err != nil {
+			fileutil.DeleteFile(dst)
+			c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Failed to save file"})
+			return
+		}
+
+		if written > maxSize {
+			fileutil.DeleteFile(dst)
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: fmt.Sprintf("File size exceeds maximum of %d MB", h.config.MaxFileSizeMB)})
+			return
+		}
+
+		savedName = safeFilename
+		break
 	}
 
-	// Sanitize filename
-	safeFilename, err := fileutil.SanitizeFilename(file.Filename)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, models.ErrorResponse{
-			Error: "Invalid filename",
-		})
-		return
-	}
-
-	// Build destination path
-	dst := filepath.Join(h.config.UploadDir, safeFilename)
-
-	// Save file
-	if err := c.SaveUploadedFile(file, dst); err != nil {
-		c.JSON(http.StatusInternalServerError, models.ErrorResponse{
-			Error: "Failed to save file",
-		})
+	if savedName == "" {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "No file provided"})
 		return
 	}
 
 	c.JSON(http.StatusOK, models.UploadResponse{
 		Message:  "File uploaded successfully",
-		Filename: safeFilename,
+		Filename: savedName,
 	})
 }
 
